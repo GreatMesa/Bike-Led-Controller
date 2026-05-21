@@ -4,7 +4,8 @@ This project is sponsored by JLCPCB
 <img width="310" height="162" alt="images" src="https://github.com/user-attachments/assets/635f907e-68a6-49c5-8ab6-bc3624ed3ef1" />
 
 ## Introduction
-The goal of this project is to add more customizability to bike lights. When I was looking though lights for my bike I found that there was a limited amount of colors and patterns I could use. I wanted to create lights and controllers so I could have a better understanding of what was going on in the controller in terms of current consumption and speed of the bike, things that also were not present in other controllers. In this project, I designed a custom bike ring + a custom led controller board so that I could 
+The goal of this project is to add more customizability to bike lights. When I was looking though lights for my bike I found that there was a limited amount of colors and patterns I could use. I wanted to create lights and controllers so I could have a better understanding of what was going on in the controller in terms of current consumption and speed of the bike, things that also were not present in other controllers. In this project, I designed a custom bike ring + a custom led controller board so that I could have a greater level of control.
+
 ## Custom LED Ring
 For the ring, I decided to split the base and top  of the ring into 8 seperate segments. This was due to the size of the ring being way to big for my bike & in terms of the print time & assembely ease, 8 segments seemed to do the best in those 2 categories. 
 
