@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <button onclick="connectBLE()">Connect ESP32</button>
+  <button onclick="sendCommand('brightness=60')">Dim</button>
+  <button onclick="sendCommand('brightness=255')">Full Brightness</button>
+  <button onclick="sendCommand('mode=0')">Rainbow</button>
+  <button onclick="sendCommand('mode=2')">Off</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    const SERVICE_UUID = "9648cccb-9798-46d5-8862-cf77ef5b3585";
+    const SENSOR_TX_UUID = "d87a1cc7-8d4d-47c3-a5c3-0c06e6df6fba";
+    const COMMAND_RX_UUID = "28fd7d1c-851f-4d1f-b5d0-60b0f1773c33";
+
+    let commandCharacteristic = null;
+
+    async function connectBLE() {
+      const device = await navigator.bluetooth.requestDevice({
+        filters: [{ services: [SERVICE_UUID] }]
+      });
+
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(SERVICE_UUID);
+
+      const sensorCharacteristic = await service.getCharacteristic(SENSOR_TX_UUID);
+      commandCharacteristic = await service.getCharacteristic(COMMAND_RX_UUID);
+
+      sensorCharacteristic.addEventListener(
+        "characteristicvaluechanged",
+        handleSensorPacket
+      );
+
+      await sensorCharacteristic.startNotifications();
+
+      document.getElementById("output").textContent = "Connected.\n";
+    }
+
+    function handleSensorPacket(event) {
+      const dv = event.target.value;
+
+      const packet = {
+        magic: dv.getUint32(0, true),
+        version: dv.getUint16(4, true),
+        packetSize: dv.getUint16(6, true),
+
+        sequence: dv.getUint32(8, true),
+        millisTime: dv.getUint32(12, true),
+
+        currentA: dv.getFloat32(16, true),
+        voltageV: dv.getFloat32(20, true),
+        powerW: dv.getFloat32(24, true),
+        temperatureC: dv.getFloat32(28, true),
+
+        ax_mg: dv.getInt16(32, true),
+        ay_mg: dv.getInt16(34, true),
+        az_mg: dv.getInt16(36, true),
+
+        gx_dps100: dv.getInt16(38, true),
+        gy_dps100: dv.getInt16(40, true),
+        gz_dps100: dv.getInt16(42, true),
+
+        mode: dv.getUint8(44),
+        brightness: dv.getUint8(45),
+        saturation: dv.getUint8(46),
+        flags: dv.getUint8(47)
+      };
+
+      packet.gx_dps = packet.gx_dps100 / 100.0;
+      packet.gy_dps = packet.gy_dps100 / 100.0;
+      packet.gz_dps = packet.gz_dps100 / 100.0;
+
+      document.getElementById("output").textContent =
+        JSON.stringify(packet, null, 2);
+    }
+
+    async function sendCommand(commandString) {
+      if (!commandCharacteristic) {
+        alert("Connect first.");
+        return;
+      }
+
+      const encoder = new TextEncoder();
+      await commandCharacteristic.writeValue(encoder.encode(commandString));
+    }
+  </script>
+</body>
+</html>
