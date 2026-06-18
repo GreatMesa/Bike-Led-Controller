@@ -30,7 +30,7 @@ public:
         @brief
         Initializes the INA236 Class and returns a message.
     */
-    std::string initialize();
+    bool initialize();
     /*
             @brief Writes a 16-Bit value to a specified register.
             @param reg The wanted register to be written to.

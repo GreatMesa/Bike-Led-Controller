@@ -40,19 +40,19 @@ uint16_t tmp117::readRegister(uint8_t reg)
     return 0;
 }
 
-std::string tmp117::initialize()
+bool tmp117::initialize()
 {
     uint16_t id = readRegister(0x0F);
     if (id != 0x117)
     {
         Serial.println(id);
-        return "TMP117 ID Incorrect. TMP117 Not Initialized.";
+        return false;
     }
 
     configurate();
     writeRegister(0x01, config);
-
-    return "TMP117 Initialized.";
+    Serial.println("TMP117 Initialized.");
+    return true;
 }
 
 float tmp117::getTemperature()

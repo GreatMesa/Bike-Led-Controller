@@ -23,7 +23,7 @@ bool ina236::writeRegister(uint8_t reg, uint16_t value)
     Wire.beginTransmission(0x40);
 
     Wire.write(reg);
-    Wire.write((value << 8) & 0xFF);
+    Wire.write((value >> 8) & 0xFF);
     Wire.write(value & 0xFF);
     Wire.endTransmission();
     return 1;
@@ -33,26 +33,23 @@ uint16_t ina236::readRegister(uint8_t reg)
 {
     Wire.beginTransmission(0x40);
     Wire.write(reg);
-    Wire.endTransmission(false);
+    Wire.endTransmission();
 
     Wire.requestFrom(0x40, 2);
-    if (Wire.available() >= 2)
-    {
-        uint8_t high = Wire.read();
-        uint8_t low = Wire.read();
-        uint16_t value = (high << 8) | (low);
-        return value;
-    }
+    uint8_t high = Wire.read();
+    uint8_t low = Wire.read();
+    uint16_t value = (high << 8) | (low);
+    return value;
     return 0;
 }
 
-std::string ina236::initialize()
+bool ina236::initialize()
 {
     uint16_t id = readRegister(0x3E);
     if (id != 0x5449)
     {
         Serial.println(id);
-        return "INA236 ID Incorrect. INA236 Not Initialized.";
+        return false;
     }
 
     configurate();
@@ -62,8 +59,8 @@ std::string ina236::initialize()
     writeRegister(0x05, callibration);
 
     writeRegister(0x06, 0b0000010000000000);
-
-    return "INA236 Initialized.";
+    Serial.println("INA236 Initialized.");
+    return true;
 }
 
 float ina236::getCurrent()
